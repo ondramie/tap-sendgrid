@@ -1,9 +1,14 @@
+# ./tap_sendgrid/context.py
+
 from datetime import date
 import pendulum
 import singer
 from singer import bookmarks as bks_
 
 from .utils import trim_members_all, clean_for_cache
+
+LOGGER = singer.get_logger()
+
 
 class Context(object):
     """Represents a collection of global objects necessary for performing
@@ -33,13 +38,32 @@ class Context(object):
 
     @catalog.setter
     def catalog(self, catalog):
+        LOGGER.info("==" * 40)
+        LOGGER.info("Setting catalog")
+        LOGGER.info(f"Catalog type: {type(catalog)}")
+        if hasattr(catalog, "streams"):
+            LOGGER.info(f"Total streams: {len(catalog.streams)}")
+            for stream in catalog.streams:
+                LOGGER.info(f"Stream {stream.tap_stream_id}:")
+                LOGGER.info(f"  is_selected(): {stream.is_selected()}")
+                try:
+                    LOGGER.info(f"  Stream dict: {stream.to_dict()}")
+                except:
+                    LOGGER.info("  Could not convert stream to dict")
+                try:
+                    LOGGER.info(f"  Metadata: {stream.metadata}")
+                except:
+                    LOGGER.info("  Could not access metadata")
+
         self._catalog = catalog
-        self.selected_stream_ids = set(
-            [s.tap_stream_id for s in catalog.streams
-             if s.is_selected()]
+        selected_ids = set(
+            [s.tap_stream_id for s in catalog.streams if s.is_selected()]
         )
-        self.selected_catalog = [s for s in catalog.streams
-                                 if s.is_selected()]
+        LOGGER.info(f"Selected IDs after processing: {selected_ids}")
+        self.selected_stream_ids = selected_ids
+        self.selected_catalog = [s for s in catalog.streams if s.is_selected()]
+        LOGGER.info(f"Final selected catalog count: {len(self.selected_catalog)}")
+        LOGGER.info("==" * 40)
 
     def get_bookmark(self, path):
         return bks_.get_bookmark(self.state, *path)
@@ -61,21 +85,29 @@ class Context(object):
         bks_.clear_offset(self.state, tap_stream_id)
 
     def update_start_date_bookmark(self, path):
+        """Update bookmark for either member_count or timestamp paths"""
         val = self.get_bookmark(path)
-        if path[1] == 'member_count':
+        bookmark_type = path[1]
+
+        # Handle member_count type bookmarks
+        if bookmark_type == "member_count":
             if not val:
                 val = []
                 self.set_bookmark(path, val)
             return val
-        else:
+
+        # Handle timestamp type bookmarks
+        if not val:
+            val = self.config.get("start_date")
             if not val:
-                val = self.config["start_date"]
-                self.set_bookmark(path, val)
-            return pendulum.parse(val)
+                raise ValueError("start_date is not defined in state or config.")
+            self.set_bookmark(path, val)
+
+        return pendulum.parse(val)
 
     def save_member_count_state(self, s, stream):
         old_state = self.update_start_date_bookmark(stream.bookmark)
-        new_state = [s] + [os for os in old_state if os['id'] != s['id']]
+        new_state = [s] + [os for os in old_state if os["id"] != s["id"]]
 
         self.set_bookmark(stream.bookmark, new_state)
 
@@ -90,7 +122,6 @@ class Context(object):
         return pendulum.from_timestamp(ts).to_rfc3339_string()
 
     def update_cache(self, data, stream_id):
-        self.cache.update({
-            trim_members_all(stream_id):
-                clean_for_cache(data, stream_id)
-        })
+        self.cache.update(
+            {trim_members_all(stream_id): clean_for_cache(data, stream_id)}
+        )
