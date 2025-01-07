@@ -48,14 +48,14 @@ def check_credentials_are_authorized(ctx):
 def discover(ctx):
     check_credentials_are_authorized(ctx)
     catalog = Catalog([])
-    LOGGER.info("stream.STREAMS: %s", streams.STREAMS)
+    LOGGER.debug("stream.STREAMS: %s", streams.STREAMS)
     for stream in streams.STREAMS:
-        LOGGER.info(f"Processing stream: {stream.tap_stream_id}")
+        LOGGER.debug(f"Processing stream: {stream.tap_stream_id}")
         schema = Schema.from_dict(
             streams.load_schema(stream.tap_stream_id), inclusion="available"
         )
 
-        LOGGER.info(f"Processing stream: {stream.tap_stream_id}: {schema}")
+        LOGGER.debug(f"Processing stream: {stream.tap_stream_id}: {schema}")
 
         mdata = metadata.new()
         mdata = metadata.write(mdata, (), "selected", True)
@@ -135,24 +135,22 @@ def sync(ctx):
 
 def main_impl():
     args = parse_args(REQUIRED_CONFIG_KEYS)
-    # LOGGER.info(f"Args: {args}")
-    # LOGGER.info(f"Properties: {args.properties}")
     ctx = Context(args.config, args.state)
     if args.discover:
         discover(ctx).dump()
     else:
-        LOGGER.info("Creating catalog from properties")
-        LOGGER.info(f"Properties structure: {args.properties}")
+        LOGGER.debug("Creating catalog from properties")
+        LOGGER.debug(f"Properties structure: {args.properties}")
 
         ctx.catalog = (
             Catalog.from_dict(args.properties) if args.properties else discover(ctx)
         )
         LOGGER.info("Catalog created")
 
-        LOGGER.info(
+        LOGGER.debug(
             f"Loaded catalog streams: {[s.tap_stream_id for s in ctx.catalog.streams]}"
         )
-        LOGGER.info(
+        LOGGER.debug(
             f"Selected: {[s.tap_stream_id for s in ctx.catalog.streams if s.is_selected()]}"
         )
 

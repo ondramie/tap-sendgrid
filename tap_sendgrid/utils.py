@@ -22,7 +22,7 @@ def make_record_if_str(record, stream):
     """
     transform email string to dict for group suppression members
     """
-    logger.info(f"Original record: {record}")
+    logger.debug(f"Original record: {record}")
     if isinstance(record, str):
         record = {PK_FIELDS[stream.tap_stream_id][0]: record}
 
@@ -34,15 +34,15 @@ def send_selected_properties(schema, record, stream, added_properties=None):
     Creates and returns new record with selected properties
     """
     r = make_record_if_str(record, stream)
-    logger.info(f"Original record: {r}")
-    logger.info(f"Raw schema input: {schema}")  # Add this line
+    logger.debug(f"Original record: {r}")
+    logger.debug(f"Raw schema input: {schema}")
 
     # Get schema properties
     schema_dict = schema.to_dict() if hasattr(schema, "to_dict") else schema
-    logger.info(f"Schema dict: {schema_dict}")  # Add this line
+    logger.debug(f"Schema dict: {schema_dict}")
 
     properties = schema_dict.get("properties", {})
-    logger.info(f"Schema properties: {properties}")  # Add this line
+    logger.debug(f"Schema properties: {properties}")
 
     # Process record
     processed_record = {}
@@ -54,11 +54,11 @@ def send_selected_properties(schema, record, stream, added_properties=None):
                 field_schema.get("type", []) and "null" in field_schema["type"]
             ):
                 processed_record[field_name] = value
-                logger.info(f"Added field {field_name} with value {value}")
+                logger.debug(f"Added field {field_name} with value {value}")
             else:
-                logger.info(f"Skipping null value for field {field_name}")
+                logger.debug(f"Skipping null value for field {field_name}")
         else:
-            logger.info(f"Field {field_name} not found in record")
+            logger.debug(f"Field {field_name} not found in record")
 
     if not processed_record:
         logger.warning(f"No fields from record {r} matched schema {properties}")
@@ -73,7 +73,7 @@ def trimmed_records(schema, data, stream, added_properties=None):
     Takes raw data and details on what to sync and returns cleaned records
     with only selected fields
     """
-    logger.info(f"Data received in trimmed_records: {data}")  # Debug log
+    logger.debug(f"Data received in trimmed_records: {data}")
     if not isinstance(data, list):
         data = [data]
 
@@ -83,7 +83,7 @@ def trimmed_records(schema, data, stream, added_properties=None):
         if r is not None  # Only process non-empty records
     ]
 
-    logger.info(f"Records after processing: {records}")  # Debug log
+    logger.debug(f"Records after processing: {records}")
     return records
 
 
@@ -148,7 +148,7 @@ def get_tap_stream_tuple(tap_stream_id):
     logger.info(f"Looking up stream for {tap_stream_id}")
     for s in STREAMS:
         if s.tap_stream_id == tap_stream_id:
-            logger.info(f"Found stream: {s}")
+            logger.debug(f"Found stream: {s}")
             return s
         logger.warning(f"No stream found for {tap_stream_id}")
 

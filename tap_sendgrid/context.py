@@ -38,20 +38,20 @@ class Context(object):
 
     @catalog.setter
     def catalog(self, catalog):
-        LOGGER.info("==" * 40)
-        LOGGER.info("Setting catalog")
-        LOGGER.info(f"Catalog type: {type(catalog)}")
+        LOGGER.debug("==" * 40)
+        LOGGER.debug("Setting catalog")
+        LOGGER.debug(f"Catalog type: {type(catalog)}")
         if hasattr(catalog, "streams"):
             LOGGER.info(f"Total streams: {len(catalog.streams)}")
             for stream in catalog.streams:
-                LOGGER.info(f"Stream {stream.tap_stream_id}:")
-                LOGGER.info(f"  is_selected(): {stream.is_selected()}")
+                LOGGER.debug(f"Stream {stream.tap_stream_id}:")
+                LOGGER.debug(f"  is_selected(): {stream.is_selected()}")
                 try:
-                    LOGGER.info(f"  Stream dict: {stream.to_dict()}")
+                    LOGGER.debug(f"  Stream dict: {stream.to_dict()}")
                 except:
-                    LOGGER.info("  Could not convert stream to dict")
+                    LOGGER.debug("  Could not convert stream to dict")
                 try:
-                    LOGGER.info(f"  Metadata: {stream.metadata}")
+                    LOGGER.debug(f"  Metadata: {stream.metadata}")
                 except:
                     LOGGER.info("  Could not access metadata")
 
@@ -59,11 +59,11 @@ class Context(object):
         selected_ids = set(
             [s.tap_stream_id for s in catalog.streams if s.is_selected()]
         )
-        LOGGER.info(f"Selected IDs after processing: {selected_ids}")
+        LOGGER.debug(f"Selected IDs after processing: {selected_ids}")
         self.selected_stream_ids = selected_ids
         self.selected_catalog = [s for s in catalog.streams if s.is_selected()]
         LOGGER.info(f"Final selected catalog count: {len(self.selected_catalog)}")
-        LOGGER.info("==" * 40)
+        LOGGER.debug("==" * 40)
 
     def get_bookmark(self, path):
         return bks_.get_bookmark(self.state, *path)

@@ -13,8 +13,7 @@ LOGGER = singer.get_logger()
 def authed_get(tap_stream_id, url, config, params=None):
     headers = {"Authorization": "Bearer %s" % config["api_key"]}
     with metrics.http_request_timer(tap_stream_id) as timer:
-        LOGGER.info(f"GET url {url}")
-        # LOGGER.info(f"GET params {params}")
+        LOGGER.debug(f"GET url {url}")
         resp = session.request(method="get", url=url, params=params, headers=headers)
         timer.tags[metrics.Tag.http_status_code] = resp.status_code
         return resp
