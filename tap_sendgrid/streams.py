@@ -1,3 +1,5 @@
+# ./tap_sendgrid/streams.py
+
 import os
 import json
 from collections import namedtuple
@@ -5,14 +7,14 @@ import singer
 
 
 class Scopes(object):
-    source = 'auth_check'
-    endpoint = 'https://api.sendgrid.com/v3/scopes'
+    source = "auth_check"
+    endpoint = "https://api.sendgrid.com/v3/scopes"
     scopes = [
-        'suppression.read',
-        'asm.groups.read',
-        'marketing_campaigns.read',
-        'templates.read',
-        'templates.versions.read'
+        "suppression.read",
+        "asm.groups.read",
+        "marketing.read",
+        "templates.read",
+        "templates.versions.read",
     ]
 
 
@@ -67,20 +69,54 @@ class BOOKMARKS(object):
 
 Stream = namedtuple("Stream", ("tap_stream_id", "bookmark", "endpoint"))
 STREAMS = [
-    Stream(IDS.GLOBAL_SUPPRESSIONS, BOOKMARKS.GLOBAL_SUPPRESSIONS, 'https://api.sendgrid.com/v3/suppression/unsubscribes'),
-    Stream(IDS.GROUPS_ALL, None, 'https://api.sendgrid.com/v3/asm/groups'),
-    Stream(IDS.GROUPS_MEMBERS, BOOKMARKS.GROUPS_MEMBERS, 'https://api.sendgrid.com/v3/asm/groups/{}/suppressions'),
-    Stream(IDS.CONTACTS, BOOKMARKS.CONTACTS, 'https://api.sendgrid.com/v3/contactdb/recipients/search'),
-    Stream(IDS.LISTS_ALL, None, 'https://api.sendgrid.com/v3/contactdb/lists'),
-    Stream(IDS.LISTS_MEMBERS, BOOKMARKS.LISTS_MEMBERS, 'https://api.sendgrid.com/v3/contactdb/lists/{}/recipients'),
-    Stream(IDS.SEGMENTS_ALL, None, 'https://api.sendgrid.com/v3/contactdb/segments'),
-    Stream(IDS.SEGMENTS_MEMBERS, BOOKMARKS.SEGMENTS_MEMBERS, 'https://api.sendgrid.com/v3/contactdb/segments/{}/recipients'),
-    Stream(IDS.TEMPLATES_ALL, None, 'https://api.sendgrid.com/v3/templates'),
-    Stream(IDS.INVALIDS, BOOKMARKS.INVALIDS, 'https://api.sendgrid.com/v3/suppression/invalid_emails'),
-    Stream(IDS.BOUNCES, BOOKMARKS.BOUNCES, 'https://api.sendgrid.com/v3/suppression/bounces'),
-    Stream(IDS.BLOCKS, BOOKMARKS.BLOCKS, 'https://api.sendgrid.com/v3/suppression/blocks'),
-    Stream(IDS.SPAM_REPORTS, BOOKMARKS.SPAM_REPORTS, 'https://api.sendgrid.com/v3/suppression/spam_reports'),
-    Stream(IDS.CAMPAIGNS, None, 'https://api.sendgrid.com/v3/campaigns'),
+    Stream(
+        IDS.GLOBAL_SUPPRESSIONS,
+        BOOKMARKS.GLOBAL_SUPPRESSIONS,
+        "https://api.sendgrid.com/v3/suppression/unsubscribes",
+    ),
+    Stream(IDS.GROUPS_ALL, None, "https://api.sendgrid.com/v3/asm/groups"),
+    Stream(
+        IDS.GROUPS_MEMBERS,
+        BOOKMARKS.GROUPS_MEMBERS,
+        "https://api.sendgrid.com/v3/asm/groups/{}/suppressions",
+    ),
+    Stream(
+        IDS.CONTACTS,
+        BOOKMARKS.CONTACTS,
+        "https://api.sendgrid.com/v3/marketing/contacts",
+    ),
+    Stream(IDS.LISTS_ALL, None, "https://api.sendgrid.com/v3/contactdb/lists"),
+    Stream(
+        IDS.LISTS_MEMBERS,
+        BOOKMARKS.LISTS_MEMBERS,
+        "https://api.sendgrid.com/v3/contactdb/lists/{}/recipients",
+    ),
+    Stream(IDS.SEGMENTS_ALL, None, "https://api.sendgrid.com/v3/contactdb/segments"),
+    Stream(
+        IDS.SEGMENTS_MEMBERS,
+        BOOKMARKS.SEGMENTS_MEMBERS,
+        "https://api.sendgrid.com/v3/contactdb/segments/{}/recipients",
+    ),
+    Stream(IDS.TEMPLATES_ALL, None, "https://api.sendgrid.com/v3/templates"),
+    Stream(
+        IDS.INVALIDS,
+        BOOKMARKS.INVALIDS,
+        "https://api.sendgrid.com/v3/suppression/invalid_emails",
+    ),
+    Stream(
+        IDS.BOUNCES,
+        BOOKMARKS.BOUNCES,
+        "https://api.sendgrid.com/v3/suppression/bounces",
+    ),
+    Stream(
+        IDS.BLOCKS, BOOKMARKS.BLOCKS, "https://api.sendgrid.com/v3/suppression/blocks"
+    ),
+    Stream(
+        IDS.SPAM_REPORTS,
+        BOOKMARKS.SPAM_REPORTS,
+        "https://api.sendgrid.com/v3/suppression/spam_reports",
+    ),
+    Stream(IDS.CAMPAIGNS, None, "https://api.sendgrid.com/v3/marketing/singlesends"),
 ]
 
 
@@ -89,7 +125,7 @@ def get_abs_path(path):
 
 
 def load_schema(stream_id):
-    path = 'schemas/{}.json'
+    path = "schemas/{}.json"
     return json.load(open(get_abs_path(path.format(stream_id))))
 
 
