@@ -27,8 +27,9 @@ class Syncer(object):
         logger.info("Starting sync")
         logger.debug(f"Selected catalog: {self.ctx.selected_catalog}")
         self.sync_alls()
-        logger.debug("Starting incrementals sync")
+        logger.info("Starting incrementals sync")
         self.sync_incrementals()
+        logger.info("Finished sync")
         self.ctx.write_state()
 
     def sync_incrementals(self):
@@ -44,21 +45,21 @@ class Syncer(object):
         )
 
         for cat_entry in self.ctx.selected_catalog:
-            logger.debug("=" * 50)
-            logger.debug(f"Processing stream: {cat_entry.tap_stream_id}")
-            logger.debug(f"Stream selection state: {cat_entry.is_selected()}")
-            logger.debug(f"Stream metadata: {cat_entry.metadata}")
+            logger.info("=" * 50)
+            logger.info(f"Processing stream: {cat_entry.tap_stream_id}")
+            logger.info(f"Stream selection state: {cat_entry.is_selected()}")
+            logger.info(f"Stream metadata: {cat_entry.metadata}")
             stream = get_tap_stream_tuple(cat_entry.tap_stream_id)
             if stream:
-                logger.debug(f"Found stream tuple: {stream}")
+                logger.info(f"Found stream tuple: {stream}")
                 if stream.bookmark:
-                    logger.debug(f"Stream has bookmark: {stream.bookmark}")
+                    logger.info(f"Stream has bookmark: {stream.bookmark}")
                     syncer = getattr(self, f"sync_{stream.bookmark[1]}", None)
-                    logger.debug(f"Found syncer method: {syncer}")
+                    logger.info(f"Found syncer method: {syncer}")
                     if syncer:
                         syncer(stream, cat_entry.schema)
                         self.ctx.write_state()
-            logger.debug("=" * 50)
+            logger.info("=" * 50)
 
     def sync_timestamp(self, stream, schema):
         """
@@ -82,12 +83,11 @@ class Syncer(object):
     def write_paged_records(
         self, stream, schema, params=None, url_key=None, added_properties=None
     ):
-        logger.debug(
-            f"Starting paged request to {stream.endpoint} with params {params}"
-        )
+        logger.info(f"Starting paged request to {stream.endpoint} with params {params}")
         for res in self.get_using_paged(stream, add_params=params, url_key=url_key):
             logger.debug(f"Got response with status {res.status_code}")
             results = res.json().get("recipients")
+            logger.info(f"write_paged_records: schema: {schema}")
             if results:
                 self.write_records(
                     schema, results, stream, added_properties=added_properties
@@ -95,9 +95,10 @@ class Syncer(object):
 
     @staticmethod
     def write_records(schema, results, stream, added_properties=None):
-        logger.debug(f"Schema in results: {results}")
+        logger.info(f"write_records: results: {results}")
+        logger.info(f"write_records: schema {schema}")
         records = trimmed_records(schema, results, stream, added_properties)
-        logger.debug(
+        logger.info(
             f"Stream endpoint {stream.endpoint}, number of records: {len(records)}"
         )
         write_records(stream.tap_stream_id, records)
@@ -110,6 +111,7 @@ class Syncer(object):
         logger.info(f"Attempting to sync stream {stream.tap_stream_id}")
         logger.info(f"Start time: {start}, End time: {end}")
         logger.info(f"Stream endpoint: {stream.endpoint}")
+        logger.info(f"sync_end_time: schema {schema}")
 
         # Prevent processing invalid time windows
         if start >= end:
@@ -135,7 +137,7 @@ class Syncer(object):
 
         except Exception as e:
             logger.error(f"Error syncing {stream.tap_stream_id}: {str(e)}")
-        raise
+            raise
 
     def sync_member_count(self, stream, schema):
         stream_type = trim_members_all(stream.tap_stream_id)
@@ -157,6 +159,7 @@ class Syncer(object):
 
     def sync_alls(self):
         for cat_entry in self.ctx.selected_catalog:
+            logger.info(f"sync_alls: schema {cat_entry.schema}")
             stream = get_tap_stream_tuple(cat_entry.tap_stream_id)
             if not stream.bookmark:
                 logger.info(f"Extracting all {stream.tap_stream_id}")
@@ -166,6 +169,8 @@ class Syncer(object):
                 self.ctx.update_cache(results, cat_entry.tap_stream_id)
 
     def get_and_write_members(self, list, stream, schema):
+        logger.info(f"get_and_write_members: schema {schema}")
+
         added_properties = get_added_properties(stream, list["id"])
 
         if stream.tap_stream_id == IDS.GROUPS_MEMBERS:
@@ -182,7 +187,7 @@ class Syncer(object):
         self.ctx.save_member_count_state(list, stream)
 
     def get_alls(self, stream, url_key=None):
-        logger.debug(f"Endpoint {stream.endpoint}")
+        logger.info(f"Endpoint {stream.endpoint}")
         endpoint = stream.endpoint.format(url_key) if url_key else stream.endpoint
 
         return get_results_from_payload(
@@ -217,7 +222,7 @@ class Syncer(object):
                 start_time=start,
                 end_time=end,
             )
-            logger.debug(f"Making request to {stream.endpoint} with params {params}")
+            logger.info(f"Making request to {stream.endpoint} with params {params}")
 
             try:
                 r = authed_get(
