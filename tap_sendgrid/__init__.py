@@ -55,7 +55,7 @@ def discover(ctx):
             streams.load_schema(stream.tap_stream_id), inclusion="available"
         )
 
-        LOGGER.debug(f"Processing stream: {stream.tap_stream_id}: {schema}")
+        LOGGER.info(f"Processing stream: {stream.tap_stream_id}: {schema}")
 
         mdata = metadata.new()
         mdata = metadata.write(mdata, (), "selected", True)
@@ -112,20 +112,30 @@ def desired_fields(selected, stream_schema):
 def sync(ctx):
     check_credentials_are_authorized(ctx)
 
+    LOGGER.info(f"ctx.selected_catalog: {ctx.selected_catalog}")
+
     for c in ctx.selected_catalog:
+        LOGGER.info(f"c.schema: {c.schema}")
         selected_fields = set(
             [
                 k
                 for k, v in c.schema.properties.items()
-                if v.selected or k == c.replication_key
+                if v.selected
+                or k == c.replication_key
+                or v.inclusion in ("available", "automatic")
             ]
         )
         fields = desired_fields(selected_fields, c.schema)
+        LOGGER.debug(f"c.schema.properties: {c.schema.properties}")
+        LOGGER.debug(f"selected_fields: {selected_fields}")
+        LOGGER.debug(f"fields: {fields}")
 
         schema = Schema(
             type="object",
             properties={prop: c.schema.properties[prop] for prop in fields},
         )
+
+        LOGGER.info(f"Schema {schema}")
         c.schema = schema
         streams.write_schema(c.tap_stream_id, schema)
 
@@ -135,7 +145,9 @@ def sync(ctx):
 
 def main_impl():
     args = parse_args(REQUIRED_CONFIG_KEYS)
+    LOGGER.debug(f"Starting tap with args: {args}")
     ctx = Context(args.config, args.state)
+    LOGGER.debug(f"Context created: {ctx}")
     if args.discover:
         discover(ctx).dump()
     else:

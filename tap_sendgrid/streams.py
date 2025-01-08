@@ -84,7 +84,6 @@ STREAMS = [
         IDS.CONTACTS,
         BOOKMARKS.CONTACTS,
         "https://api.sendgrid.com/v3/marketing/contacts",
-        # "https://api.sendgrid.com/v3/contactdb/recipients/search",
     ),
     Stream(IDS.LISTS_ALL, None, "https://api.sendgrid.com/v3/contactdb/lists"),
     Stream(

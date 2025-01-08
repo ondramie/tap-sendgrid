@@ -30,42 +30,29 @@ def make_record_if_str(record, stream):
 
 
 def send_selected_properties(schema, record, stream, added_properties=None):
-    """
-    Creates and returns new record with selected properties
-    """
+    """Creates and returns new record with selected properties"""
     r = make_record_if_str(record, stream)
-    logger.debug(f"Original record: {r}")
-    logger.debug(f"Raw schema input: {schema}")
 
     # Get schema properties
     schema_dict = schema.to_dict() if hasattr(schema, "to_dict") else schema
-    logger.debug(f"Schema dict: {schema_dict}")
-
     properties = schema_dict.get("properties", {})
-    logger.debug(f"Schema properties: {properties}")
 
-    # Process record
-    processed_record = {}
-    for field_name, field_schema in properties.items():
-        if field_name in r:
-            value = r[field_name]
-            # Allow null values if schema permits them
-            if value is not None or (
-                field_schema.get("type", []) and "null" in field_schema["type"]
-            ):
-                processed_record[field_name] = value
-                logger.debug(f"Added field {field_name} with value {value}")
-            else:
-                logger.debug(f"Skipping null value for field {field_name}")
-        else:
-            logger.debug(f"Field {field_name} not found in record")
+    # Create record with only fields that exist in schema and are selected
+    processed_record = {
+        field: r[field]
+        for field, schema_prop in properties.items()
+        if field in r
+        and (schema_prop.get("selected") or schema_prop.get("inclusion") == "automatic")
+        and (r[field] is not None or "null" in schema_prop.get("type", []))
+    }
 
-    if not processed_record:
-        logger.warning(f"No fields from record {r} matched schema {properties}")
-        # Return original record as fallback when no fields match
-        return r  # Add this line
+    logger.info(f"Processed record: {processed_record}")
 
-    return processed_record
+    # Add any additional properties if provided
+    if added_properties:
+        processed_record.update(added_properties)
+
+    return processed_record or r
 
 
 def trimmed_records(schema, data, stream, added_properties=None):
@@ -73,7 +60,7 @@ def trimmed_records(schema, data, stream, added_properties=None):
     Takes raw data and details on what to sync and returns cleaned records
     with only selected fields
     """
-    logger.debug(f"Data received in trimmed_records: {data}")
+    logger.info(f"Data received in trimmed_records: {data}")
     if not isinstance(data, list):
         data = [data]
 
@@ -147,6 +134,8 @@ def safe_update_dict(obj1, obj2):
 def get_tap_stream_tuple(tap_stream_id):
     logger.info(f"Looking up stream for {tap_stream_id}")
     for s in STREAMS:
+        logger.info(f"Checking s.tap_stream_id: {s.tap_stream_id}")
+        logger.info(f"Checking tap_stream_id: {tap_stream_id}")
         if s.tap_stream_id == tap_stream_id:
             logger.debug(f"Found stream: {s}")
             return s
