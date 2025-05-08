@@ -1,8 +1,5 @@
-# ./tap_sendgrid/http.py
-
-import singer
-
 import requests
+import singer
 from singer import metrics
 
 session = requests.Session()

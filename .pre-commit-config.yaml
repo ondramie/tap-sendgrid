@@ -1,0 +1,53 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: local
+    hooks:
+    -   id: flake8
+        name: flake8
+        description: Running flake8 linter
+        entry: poetry run flake8 --config setup.cfg
+        language: system
+        files: '.py$'
+        types: [file]
+        verbose: true
+
+    -   id: black
+        name: black
+        description: Running Black formatter
+        entry: poetry run black --config pyproject.toml
+        language: system
+        files: '.py$'
+        types: [file]
+        verbose: true
+
+    -   id: isort
+        name: isort
+        description: Running Isort
+        entry: poetry run isort
+        language: system
+        files: '.py$'
+        types: [file]
+        verbose: true
+
+    -   id: mypy
+        name: mypy
+        description: Running mypy to check types
+        entry: poetry run mypy --config-file pyproject.toml
+        language: system
+        files: '.py$'
+        types: [file]
+        verbose: true
+
+    -   id: autoflake
+        name: autoflake
+        description: Remove unused imports using autoflake
+        entry: poetry run autoflake -i --remove-all-unused-imports
+        language: system
+        files: '.py$'
+        types: [file]
+        verbose: true

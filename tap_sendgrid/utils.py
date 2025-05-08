@@ -1,8 +1,6 @@
-# ./tap_sendgrid/utils.py
-
 import singer
 
-from .streams import PK_FIELDS, STREAMS, IDS
+from .streams import IDS, PK_FIELDS, STREAMS
 
 logger = singer.get_logger()
 

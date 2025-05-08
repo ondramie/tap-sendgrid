@@ -1,8 +1,7 @@
-# ./tap_sendgrid/streams.py
-
-import os
 import json
+import os
 from collections import namedtuple
+
 import singer
 
 
@@ -32,7 +31,8 @@ class IDS(object):
     BOUNCES = "bounces"
     BLOCKS = "blocks"
     SPAM_REPORTS = "spam_reports"
-    CAMPAIGNS = "campaigns"
+    CAMPAIGNS = "campaigns"  # deprecated; use with caution
+    SINGLE_SENDS = "single_sends"
 
 
 stream_ids = [getattr(IDS, x) for x in dir(IDS)]
@@ -51,7 +51,8 @@ PK_FIELDS = {
     IDS.BOUNCES: ["email"],
     IDS.BLOCKS: ["email"],
     IDS.SPAM_REPORTS: ["email"],
-    IDS.CAMPAIGNS: ["id"],
+    IDS.CAMPAIGNS: ["id"],  # deprecated; use with caution
+    IDS.SINGLE_SENDS: ["id"],
 }
 
 
@@ -116,7 +117,7 @@ STREAMS = [
         BOOKMARKS.SPAM_REPORTS,
         "https://api.sendgrid.com/v3/suppression/spam_reports",
     ),
-    Stream(IDS.CAMPAIGNS, None, "https://api.sendgrid.com/v3/marketing/singlesends"),
+    Stream(IDS.SINGLE_SENDS, None, "https://api.sendgrid.com/v3/marketing/singlesends"),
 ]
 
 

@@ -1,11 +1,10 @@
-# ./tap_sendgrid/context.py
-
 from datetime import date
+
 import pendulum
 import singer
 from singer import bookmarks as bks_
 
-from .utils import trim_members_all, clean_for_cache
+from .utils import clean_for_cache, trim_members_all
 
 LOGGER = singer.get_logger()
 
@@ -48,12 +47,12 @@ class Context(object):
                 LOGGER.debug(f"  is_selected(): {stream.is_selected()}")
                 try:
                     LOGGER.debug(f"  Stream dict: {stream.to_dict()}")
-                except:
-                    LOGGER.debug("  Could not convert stream to dict")
+                except Exception as e:
+                    LOGGER.debug(f"  Could not convert stream to dict: {e}")
                 try:
                     LOGGER.debug(f"  Metadata: {stream.metadata}")
-                except:
-                    LOGGER.info("  Could not access metadata")
+                except Exception as e:
+                    LOGGER.info(f"  Could not access metadata: {e}")
 
         self._catalog = catalog
         selected_ids = set(

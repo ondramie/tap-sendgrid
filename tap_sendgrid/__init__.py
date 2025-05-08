@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-# ./tap_sendgrid/__init__.py
 
 import singer
+from singer import metadata
 from singer.catalog import Catalog, CatalogEntry, Schema
 from singer.utils import parse_args
-from singer import metadata
 
 from . import streams
 from .context import Context

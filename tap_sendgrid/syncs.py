@@ -1,17 +1,16 @@
-# ./tap_sendgrid/syncs.py
-
 import singer
-from .streams import IDS
+
 from .http import authed_get, end_of_records_check
+from .streams import IDS
 from .utils import (
-    trimmed_records,
-    trim_members_all,
-    get_results_from_payload,
-    safe_update_dict,
-    write_records,
-    get_tap_stream_tuple,
     find_old_list_count,
     get_added_properties,
+    get_results_from_payload,
+    get_tap_stream_tuple,
+    safe_update_dict,
+    trim_members_all,
+    trimmed_records,
+    write_records,
 )
 
 logger = singer.get_logger()
@@ -19,7 +18,6 @@ LIMIT = 500
 
 
 class Syncer(object):
-
     def __init__(self, ctx):
         self.ctx = ctx
 
@@ -35,13 +33,15 @@ class Syncer(object):
     def sync_incrementals(self):
         logger.info("Starting sync_incrementals")
         logger.debug(
-            f"Catalog entries: {[cat_entry.tap_stream_id for cat_entry in self.ctx.catalog.streams]}"
+            f"Catalog entries: "
+            f"{[cat_entry.tap_stream_id for cat_entry in self.ctx.catalog.streams]}"
         )
         logger.debug(
-            f"Selected entries: {[cat_entry.tap_stream_id for cat_entry in self.ctx.selected_catalog]}"
+            f"Selected entries: "
+            f"{[cat_entry.tap_stream_id for cat_entry in self.ctx.selected_catalog]}"
         )
         logger.debug(
-            f"Selected catalog entries type: {type(self.ctx.selected_catalog)}"
+            f"Selected catalog entries type: " f"{type(self.ctx.selected_catalog)}"
         )
 
         for cat_entry in self.ctx.selected_catalog:
@@ -148,7 +148,8 @@ class Syncer(object):
             )
             if list["member_count"] > old_list_count:
                 logger.debug(
-                    f"Starting to extract {stream.tap_stream_id} as list size now: {list['member_count']}, was: {old_list_count}"
+                    f"Starting to extract {stream.tap_stream_id} as list size now: "
+                    f"{list['member_count']}, was: {old_list_count}"
                 )
 
                 self.get_and_write_members(list, stream, schema)
@@ -216,13 +217,13 @@ class Syncer(object):
         limit = LIMIT
 
         while True:
-            params = dict(
-                offset=offset,
-                limit=limit,
-                start_time=start,
-                end_time=end,
-            )
-            logger.info(f"Making request to {stream.endpoint} with params {params}")
+            params = {
+                "start_time": start,
+                "end_time": end,
+                "limit": limit,
+                "offset": offset,
+            }
+            logger.info(f"Getting records with params: {params}")
 
             try:
                 r = authed_get(
