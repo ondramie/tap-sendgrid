@@ -1,0 +1,59 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "tap-sendgrid"
+version = "1.0.4"
+description = "Singer.io tap for extracting data from the SendGrid API"
+authors = ["Stitch <info@stitchdata.com>"]
+readme = "README.md"
+packages = [{include = "tap_sendgrid"}]
+include = ["tap_sendgrid/schemas/*.json"]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+singer-python = "5.0.4"
+requests = "2.20.0"
+pendulum = "1.2.0"
+pytz = "2024.2"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.0.0"
+black = "^23.3.0"
+isort = "^5.12.0"
+mypy = "^1.3.0"
+autoflake = "^2.1.1"
+pre-commit = "^3.3.2"
+types-requests = "^2.31.0.20240311"
+
+[tool.poetry.scripts]
+tap-sendgrid = "tap_sendgrid:main"
+
+[tool.poetry.urls]
+"Homepage" = "http://singer.io"
+"Source" = "http://singer.io"
+
+[tool.virtualenvs]
+in-project = true
+path = ".venv"
+
+[tool.black]
+line-length = 88
+target-version = ["py37", "py38", "py39", "py310", "py311"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+warn_return_any = false
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["singer.*", "pendulum.*", "setuptools.*"]
+ignore_missing_imports = true

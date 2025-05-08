@@ -37,6 +37,7 @@ setup(
             "bounces.json",
             "campaigns.json",
             "spam_reports.json",
+            "single_sends.json",
         ]
     },
     include_package_data=True,

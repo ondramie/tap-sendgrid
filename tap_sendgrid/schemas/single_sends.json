@@ -1,0 +1,58 @@
+{
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "status": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "categories": {
+        "type": [
+          "null",
+          "array"
+        ]
+      },
+        "send_at": {
+            "type": [
+            "null",
+            "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+            "null",
+            "string"
+            ]
+        },
+        "updated_at": {
+            "type": [
+            "null",
+            "string"
+            ]
+        },
+        "is_abtest": {
+            "type": [
+            "null",
+            "boolean"
+            ]
+        },
+        "abtest": {
+            "type": [
+            "null",
+            "object"
+            ]
+        }
+    }
+}
